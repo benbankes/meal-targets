@@ -3,12 +3,12 @@
   "name": "Today's Meal Targets for Caleb",
   "icons": [
     {
-      "src": "/assets/img/love-meal.png",
+      "src": "/meal-targets/assets/img/love-meal.png",
       "sizes": "200x200",
       "type": "image/png"
     }
   ],
-  "start_url": "/meal-targets.html",
+  "start_url": "/meal-targets/meal-targets.html",
   "display": "standalone",
   "orientation": "portrait"
 }
