@@ -1,11 +1,77 @@
+var TargetFactory = (function () {
+    function TargetFactory(startBreakfastAt, beInBedAt, mealCount, mealIntervalHours) {
+        if (mealCount === void 0) { mealCount = 0; }
+        if (mealIntervalHours === void 0) { mealIntervalHours = 0; }
+        this.targets = [];
+        if (mealCount === 0 && mealIntervalHours === 0) {
+            throw new Error('Either mealCount or mealIntervalHours must be specified');
+        }
+        if (mealCount !== 0 && mealIntervalHours !== 0) {
+            throw new Error('Specifying mealCount and mealIntervalHours simultaneously is not allowed');
+        }
+        if (startBreakfastAt > beInBedAt) {
+            throw new Error('Time to be in bed must be after the start of breakfast');
+        }
+        this.startBreakfastAt = startBreakfastAt;
+        this.nextTargetStartTime = startBreakfastAt;
+        this.beInBedAt = beInBedAt;
+        this.mealCount = mealCount;
+        this.mealIntervalHours = mealIntervalHours;
+    }
+    TargetFactory.prototype.createTargets = function () {
+        if (this.useMealCountStrategy()) {
+            return this.createTargetsGivenMealCount();
+        }
+        else {
+        }
+    };
+    TargetFactory.prototype.calculateLastMealStartTime = function () {
+        var oneHoursOfMilliseconds = 1000 * 60 * 60;
+        return new Date(this.beInBedAt.getTime() - oneHoursOfMilliseconds);
+    };
+    TargetFactory.prototype.calculateDivisibleHours = function () {
+        var waketime = this.calculateLastMealStartTime() - this.startBreakfastAt;
+        var waketimeMinutes = new Date(waketime).getMinutes();
+        var waketimeSeconds = new Date(waketime).getSeconds();
+        var waketimeMilliseconds = new Date(waketime).getMilliseconds();
+        if ([0, 30].indexOf(waketimeMinutes) < 0 || waketimeSeconds !== 0 || waketimeMilliseconds !== 0) {
+            throw new Error('The time between the first feeding (breakfast) and the start of the last feeding (one hour before bedtime) must be divisible into 1/4-hour increments');
+        }
+        return waketime / (1000 * 60 * 60);
+    };
+    TargetFactory.prototype.countIntervalCutsToMake = function () {
+        return this.mealCount - 1;
+    };
+    TargetFactory.prototype.calculateMealIntervalHours = function () {
+        var unroundedIntervalHours = this.calculateDivisibleHours() / this.countIntervalCutsToMake();
+        return Math.floor(unroundedIntervalHours * 2) / 2;
+    };
+    TargetFactory.prototype.createTargetsGivenMealCount = function () {
+        var intervalHours = this.calculateMealIntervalHours();
+        var remainderHours = this.calculateDivisibleHours() - intervalHours * this.countIntervalCutsToMake();
+        var countExpandedTargets = remainderHours * 2;
+        for (var ithInterval = 1; ithInterval <= this.mealCount; ithInterval++) {
+            var target = new TargetEntity();
+            var remainingIntervals = this.mealCount - ithInterval + 1;
+            var thisIntervalHours = (remainingIntervals > countExpandedTargets) ? intervalHours : intervalHours + 0.5;
+            target.icon = 'bagel';
+            target.setTime(new Date(this.nextTargetStartTime.getTime()));
+            this.targets.push(target);
+            this.nextTargetStartTime.setTime(this.nextTargetStartTime.getTime() + thisIntervalHours * 60 * 60 * 1000);
+        }
+        return this.targets;
+    };
+    TargetFactory.prototype.useMealCountStrategy = function () {
+        return (this.mealCount);
+    };
+    return TargetFactory;
+}());
 var TargetEntity = (function () {
-    function TargetEntity(pojo) {
+    function TargetEntity() {
         this.icon = 'apple';
         this.duration = 0;
-        this.icon = (pojo) ? pojo.icon : this.icon;
-        this.duration = (pojo) ? pojo.duration : this.duration;
     }
-    TargetEntity.prototype.getTime = function () {
+    TargetEntity.prototype.getTimeString = function () {
         var isAm = this.time.getHours() < 12;
         var hours = (isAm) ? this.time.getHours() : this.time.getHours() - 12;
         var doPadMinutes = (this.time.getMinutes() < 10);
@@ -13,19 +79,20 @@ var TargetEntity = (function () {
         var amPm = (isAm) ? 'am' : 'pm';
         return hours + ':' + minutes + ' ' + amPm;
     };
+    TargetEntity.prototype.setIcon = function (icon) {
+        this.icon = icon;
+    };
+    TargetEntity.prototype.setTime = function (time) {
+        this.time = time;
+    };
     return TargetEntity;
 }());
 var TargetCollection = (function () {
     function TargetCollection(targets) {
         this.targets = [];
-        var firstTargetTime = new Date();
-        firstTargetTime.setHours(6, 0, 0, 0);
-        this.targetTime = firstTargetTime;
         this.addTargets(targets);
     }
     TargetCollection.prototype.addTarget = function (target) {
-        this.targetTime.setMinutes(this.targetTime.getMinutes() + target.duration * 60);
-        target.time = new Date(this.targetTime.getTime());
         this.targets.push(target);
     };
     TargetCollection.prototype.addTargets = function (targets) {
@@ -35,11 +102,7 @@ var TargetCollection = (function () {
     };
     return TargetCollection;
 }());
-var targets = [
-    new TargetEntity({ icon: 'cereal', duration: 2.5 }),
-    new TargetEntity({ icon: 'apple', duration: 2.5 }),
-    new TargetEntity({ icon: 'bagel', duration: 3 }),
-];
+var targets = new TargetFactory(new Date('2016-08-08 03:30'), new Date('2016-08-08 21:30'), 7).createTargets();
 var theTargetCollection = new TargetCollection(targets);
 var Target = React.createClass({
     render: function () {
@@ -50,7 +113,7 @@ var Target = React.createClass({
 var TargetList = React.createClass({
     render: function () {
         return (React.createElement("div", null, this.props.items.targets.map(function (item, i) {
-            return (React.createElement(Target, {icon: item.icon, duration: item.getTime()}));
+            return (React.createElement(Target, {icon: item.icon, duration: item.getTimeString()}));
         }, this)));
     }
 });
