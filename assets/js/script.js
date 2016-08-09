@@ -35,7 +35,7 @@ var TargetFactory = (function () {
         var mealCount = this.calculateMealCount();
         for (var ithInterval = 1; ithInterval <= mealCount; ithInterval++) {
             var target = new TargetEntity();
-            target.icon = 'bagel';
+            target.setIcon('bagel');
             target.setTime(new Date(this.nextTargetStartTime.getTime()));
             this.targets.push(target);
             var duration = this.mealIntervalHours * 1000 * 60 * 60;
@@ -44,8 +44,6 @@ var TargetFactory = (function () {
         return this.targets;
     };
     TargetFactory.prototype.calculateMealCount = function () {
-        console.log(this.calculateDivisibleHours());
-        console.log(this.mealIntervalHours);
         return Math.floor(this.calculateDivisibleHours() / this.mealIntervalHours) + 1;
     };
     TargetFactory.prototype.calculateLastMealStartTime = function () {
@@ -77,7 +75,7 @@ var TargetFactory = (function () {
             var target = new TargetEntity();
             var remainingIntervals = this.mealCount - ithInterval + 1;
             var thisIntervalHours = (remainingIntervals > countExpandedTargets) ? intervalHours : intervalHours + 0.5;
-            target.icon = 'bagel';
+            target.setIcon('bagel');
             target.setTime(new Date(this.nextTargetStartTime.getTime()));
             this.targets.push(target);
             this.nextTargetStartTime.setTime(this.nextTargetStartTime.getTime() + thisIntervalHours * 60 * 60 * 1000);
@@ -92,7 +90,6 @@ var TargetFactory = (function () {
 var TargetEntity = (function () {
     function TargetEntity() {
         this.icon = 'apple';
-        this.duration = 0;
     }
     TargetEntity.prototype.getTimeString = function () {
         var isAm = this.time.getHours() < 12;
@@ -104,6 +101,9 @@ var TargetEntity = (function () {
     };
     TargetEntity.prototype.setIcon = function (icon) {
         this.icon = icon;
+    };
+    TargetEntity.prototype.getIcon = function () {
+        return this.icon;
     };
     TargetEntity.prototype.setTime = function (time) {
         this.time = time;
@@ -136,7 +136,7 @@ var Target = React.createClass({
 var TargetList = React.createClass({
     render: function () {
         return (React.createElement("div", null, this.props.items.targets.map(function (item, i) {
-            return (React.createElement(Target, {icon: item.icon, duration: item.getTimeString()}));
+            return (React.createElement(Target, {icon: item.getIcon(), duration: item.getTimeString()}));
         }, this)));
     }
 });

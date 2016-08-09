@@ -47,7 +47,7 @@ class TargetFactory {
 
         for (let ithInterval = 1; ithInterval <= mealCount; ithInterval++) {
             let target = new TargetEntity();
-            target.icon = 'bagel';
+            target.setIcon('bagel');
             target.setTime(new Date(this.nextTargetStartTime.getTime()));
 
             this.targets.push(target);
@@ -61,8 +61,6 @@ class TargetFactory {
     }
 
     private calculateMealCount() {
-        console.log(this.calculateDivisibleHours());
-        console.log(this.mealIntervalHours);
         return Math.floor(this.calculateDivisibleHours() / this.mealIntervalHours) + 1;
     }
 
@@ -104,7 +102,7 @@ class TargetFactory {
             let remainingIntervals = this.mealCount - ithInterval + 1;
             let thisIntervalHours = (remainingIntervals > countExpandedTargets) ? intervalHours : intervalHours + 0.5;
 
-            target.icon = 'bagel';
+            target.setIcon('bagel');
             target.setTime(new Date(this.nextTargetStartTime.getTime()));
 
             this.targets.push(target);
@@ -121,8 +119,7 @@ class TargetFactory {
 }
 
 class TargetEntity {
-    icon = 'apple';
-    duration = 0;
+    private icon = 'apple';
     private time: Date;
 
     getTimeString() {
@@ -137,6 +134,10 @@ class TargetEntity {
 
     setIcon(icon) {
         this.icon = icon;
+    }
+    
+    getIcon() {
+        return this.icon;
     }
 
     setTime(time:Date) {
@@ -185,7 +186,7 @@ var TargetList = React.createClass({
             <div>
                 {this.props.items.targets.map(function (item, i) {
                     return (
-                        <Target icon={item.icon} duration={item.getTimeString()}/>
+                        <Target icon={item.getIcon()} duration={item.getTimeString()}/>
                     );
                 }, this)}
             </div>
