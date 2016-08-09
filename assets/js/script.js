@@ -56,7 +56,7 @@ var TargetFactory = (function () {
         var waketimeSeconds = new Date(waketime).getSeconds();
         var waketimeMilliseconds = new Date(waketime).getMilliseconds();
         if ([0, 30].indexOf(waketimeMinutes) < 0 || waketimeSeconds !== 0 || waketimeMilliseconds !== 0) {
-            throw new Error('The time between the first feeding (breakfast) and the start of the last feeding (one hour before bedtime) must be divisible into 1/4-hour increments');
+            throw new Error('The time between the first feeding (breakfast) and the start of the last feeding (one hour before bedtime) must be divisible into 1/2-hour increments');
         }
         return waketime / (1000 * 60 * 60);
     };
@@ -93,7 +93,7 @@ var TargetEntity = (function () {
     }
     TargetEntity.prototype.getTimeString = function () {
         var isAm = this.time.getHours() < 12;
-        var hours = (isAm) ? this.time.getHours() : this.time.getHours() - 12;
+        var hours = (this.time.getHours() <= 12) ? this.time.getHours() : this.time.getHours() - 12;
         var doPadMinutes = (this.time.getMinutes() < 10);
         var minutes = (doPadMinutes) ? '0' + this.time.getMinutes() : this.time.getMinutes();
         var amPm = (isAm) ? 'am' : 'pm';
@@ -125,8 +125,6 @@ var TargetCollection = (function () {
     };
     return TargetCollection;
 }());
-var targets = new TargetFactory(new Date('2016-08-08 03:30'), new Date('2016-08-08 22:30'), undefined, 2.5).createTargets();
-var theTargetCollection = new TargetCollection(targets);
 var Target = React.createClass({
     render: function () {
         var source = "./assets/img/" + this.props.icon + ".png";
@@ -140,5 +138,24 @@ var TargetList = React.createClass({
         }, this)));
     }
 });
-ReactDOM.render(React.createElement(TargetList, {items: theTargetCollection}), document.getElementById('example'));
+document.getElementById('inpNumberOfMeals').onchange = doit;
+document.getElementById('inpBreakfastAt').onchange = doit;
+document.getElementById('inpBeInBedAt').onchange = doit;
+function doit() {
+    var numberOfMeals = document.getElementById('inpNumberOfMeals').value;
+    var now = new Date();
+    var month = now.getMonth() + 1;
+    var monthString = (month > 9) ? month : '0' + month;
+    var day = now.getDate();
+    var dayString = (day > 9) ? day : '0' + day;
+    var dateString = now.getFullYear() + '-' + monthString + '-' + dayString;
+    var valBreakfastAt = document.getElementById('inpBreakfastAt').value;
+    var valBeInBedAt = document.getElementById('inpBeInBedAt').value;
+    var dateBreakfastAt = new Date(dateString + ' ' + valBreakfastAt);
+    var dateBeInBedAt = new Date(dateString + ' ' + valBeInBedAt);
+    var targets = new TargetFactory(dateBreakfastAt, dateBeInBedAt, numberOfMeals).createTargets();
+    var theTargetCollection = new TargetCollection(targets);
+    ReactDOM.render(React.createElement(TargetList, {items: theTargetCollection}), document.getElementById('example'));
+}
+doit();
 //# sourceMappingURL=script.js.map

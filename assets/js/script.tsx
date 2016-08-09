@@ -76,7 +76,7 @@ class TargetFactory {
         let waketimeMilliseconds = new Date(waketime).getMilliseconds();
 
         if ([0, 30].indexOf(waketimeMinutes) < 0 || waketimeSeconds !== 0 || waketimeMilliseconds !== 0) {
-            throw new Error('The time between the first feeding (breakfast) and the start of the last feeding (one hour before bedtime) must be divisible into 1/4-hour increments');
+            throw new Error('The time between the first feeding (breakfast) and the start of the last feeding (one hour before bedtime) must be divisible into 1/2-hour increments');
         }
 
         return waketime / (1000 * 60 * 60);
@@ -123,11 +123,11 @@ class TargetEntity {
     private time: Date;
 
     getTimeString() {
-        var isAm = this.time.getHours() < 12;
-        var hours = (isAm) ? this.time.getHours() : this.time.getHours() - 12;
-        var doPadMinutes = (this.time.getMinutes() < 10);
-        var minutes = (doPadMinutes) ? '0' + this.time.getMinutes() : this.time.getMinutes();
-        var amPm = (isAm) ? 'am' : 'pm';
+        let isAm = this.time.getHours() < 12;
+        let hours = (this.time.getHours() <= 12) ? this.time.getHours() : this.time.getHours() - 12;
+        let doPadMinutes = (this.time.getMinutes() < 10);
+        let minutes = (doPadMinutes) ? '0' + this.time.getMinutes() : this.time.getMinutes();
+        let amPm = (isAm) ? 'am' : 'pm';
 
         return hours + ':' + minutes + ' ' + amPm;
     }
@@ -163,13 +163,9 @@ class TargetCollection {
     }
 }
 
-var targets = new TargetFactory(new Date('2016-08-08 03:30'), new Date('2016-08-08 22:30'), undefined, 2.5).createTargets();
-
-var theTargetCollection = new TargetCollection(targets);
-
-var Target = React.createClass({
+let Target = React.createClass({
     render: function () {
-        var source = "./assets/img/" + this.props.icon + ".png";
+        let source = "./assets/img/" + this.props.icon + ".png";
 
         return (
             <div>
@@ -180,7 +176,7 @@ var Target = React.createClass({
     }
 });
 
-var TargetList = React.createClass({
+let TargetList = React.createClass({
     render: function () {
         return (
             <div>
@@ -194,7 +190,34 @@ var TargetList = React.createClass({
     }
 });
 
-ReactDOM.render(
-    <TargetList items={theTargetCollection}/>,
-    document.getElementById('example')
-);
+document.getElementById('inpNumberOfMeals').onchange = doit;
+document.getElementById('inpBreakfastAt').onchange = doit;
+document.getElementById('inpBeInBedAt').onchange = doit;
+
+function doit() {
+    let numberOfMeals = document.getElementById('inpNumberOfMeals').value;
+
+    let now = new Date();
+    let month = now.getMonth() + 1;
+    let monthString = (month > 9) ? month : '0' + month;
+    let day = now.getDate();
+    let dayString = (day > 9) ? day : '0' + day;
+    let dateString = now.getFullYear() + '-' + monthString + '-' + dayString;
+
+    let valBreakfastAt = document.getElementById('inpBreakfastAt').value;
+    let valBeInBedAt = document.getElementById('inpBeInBedAt').value;
+
+    let dateBreakfastAt = new Date(dateString + ' ' + valBreakfastAt);
+    let dateBeInBedAt = new Date(dateString + ' ' + valBeInBedAt);
+
+    let targets = new TargetFactory(dateBreakfastAt, dateBeInBedAt, numberOfMeals).createTargets();
+
+    let theTargetCollection = new TargetCollection(targets);
+
+    ReactDOM.render(
+        <TargetList items={theTargetCollection}/>,
+        document.getElementById('example')
+    );
+}
+
+doit();
