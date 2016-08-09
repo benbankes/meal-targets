@@ -12,6 +12,10 @@ var TargetFactory = (function () {
         if (startBreakfastAt > beInBedAt) {
             throw new Error('Time to be in bed must be after the start of breakfast');
         }
+        var allowedMealIntervals = [1.5, 2, 2.5, 3, 3.5];
+        if (mealIntervalHours !== 0 && allowedMealIntervals.indexOf(mealIntervalHours) < 0) {
+            throw new Error('Meal intervals are only allowed to be ' + allowedMealIntervals.join(', '));
+        }
         this.startBreakfastAt = startBreakfastAt;
         this.nextTargetStartTime = startBreakfastAt;
         this.beInBedAt = beInBedAt;
@@ -23,7 +27,26 @@ var TargetFactory = (function () {
             return this.createTargetsGivenMealCount();
         }
         else {
+            return this.createTargetsGivenMealIntervals();
         }
+    };
+    TargetFactory.prototype.createTargetsGivenMealIntervals = function () {
+        this.nextTargetStartTime = this.startBreakfastAt;
+        var mealCount = this.calculateMealCount();
+        for (var ithInterval = 1; ithInterval <= mealCount; ithInterval++) {
+            var target = new TargetEntity();
+            target.icon = 'bagel';
+            target.setTime(new Date(this.nextTargetStartTime.getTime()));
+            this.targets.push(target);
+            var duration = this.mealIntervalHours * 1000 * 60 * 60;
+            this.nextTargetStartTime.setTime(this.nextTargetStartTime.getTime() + duration);
+        }
+        return this.targets;
+    };
+    TargetFactory.prototype.calculateMealCount = function () {
+        console.log(this.calculateDivisibleHours());
+        console.log(this.mealIntervalHours);
+        return Math.floor(this.calculateDivisibleHours() / this.mealIntervalHours) + 1;
     };
     TargetFactory.prototype.calculateLastMealStartTime = function () {
         var oneHoursOfMilliseconds = 1000 * 60 * 60;
@@ -102,7 +125,7 @@ var TargetCollection = (function () {
     };
     return TargetCollection;
 }());
-var targets = new TargetFactory(new Date('2016-08-08 03:30'), new Date('2016-08-08 21:30'), 7).createTargets();
+var targets = new TargetFactory(new Date('2016-08-08 03:30'), new Date('2016-08-08 22:30'), undefined, 2.5).createTargets();
 var theTargetCollection = new TargetCollection(targets);
 var Target = React.createClass({
     render: function () {
