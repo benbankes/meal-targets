@@ -56,6 +56,7 @@ var TargetFactory = (function () {
         var waketimeSeconds = new Date(waketime).getSeconds();
         var waketimeMilliseconds = new Date(waketime).getMilliseconds();
         if ([0, 30].indexOf(waketimeMinutes) < 0 || waketimeSeconds !== 0 || waketimeMilliseconds !== 0) {
+            alert('Error: Times need to be in half-hour increments');
             throw new Error('The time between the first feeding (breakfast) and the start of the last feeding (one hour before bedtime) must be divisible into 1/2-hour increments');
         }
         return waketime / (1000 * 60 * 60);
@@ -153,7 +154,12 @@ function doit() {
     var valBeInBedAt = document.getElementById('inpBeInBedAt').value;
     var dateBreakfastAt = new Date(dateString + ' ' + valBreakfastAt);
     var dateBeInBedAt = new Date(dateString + ' ' + valBeInBedAt);
-    var targets = new TargetFactory(dateBreakfastAt, dateBeInBedAt, numberOfMeals).createTargets();
+    var targets = [];
+    try {
+        targets = new TargetFactory(dateBreakfastAt, dateBeInBedAt, numberOfMeals).createTargets();
+    }
+    catch (e) {
+    }
     var theTargetCollection = new TargetCollection(targets);
     ReactDOM.render(React.createElement(TargetList, {items: theTargetCollection}), document.getElementById('example'));
 }

@@ -76,6 +76,7 @@ class TargetFactory {
         let waketimeMilliseconds = new Date(waketime).getMilliseconds();
 
         if ([0, 30].indexOf(waketimeMinutes) < 0 || waketimeSeconds !== 0 || waketimeMilliseconds !== 0) {
+            alert('Error: Times need to be in half-hour increments');
             throw new Error('The time between the first feeding (breakfast) and the start of the last feeding (one hour before bedtime) must be divisible into 1/2-hour increments');
         }
 
@@ -210,7 +211,13 @@ function doit() {
     let dateBreakfastAt = new Date(dateString + ' ' + valBreakfastAt);
     let dateBeInBedAt = new Date(dateString + ' ' + valBeInBedAt);
 
-    let targets = new TargetFactory(dateBreakfastAt, dateBeInBedAt, numberOfMeals).createTargets();
+    let targets = [];
+
+    try {
+        targets = new TargetFactory(dateBreakfastAt, dateBeInBedAt, numberOfMeals).createTargets();
+    } catch (e) {
+        // Continue
+    }
 
     let theTargetCollection = new TargetCollection(targets);
 
