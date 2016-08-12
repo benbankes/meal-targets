@@ -191,6 +191,16 @@ let TargetList = React.createClass({
     }
 });
 
+$(function() {
+    var configs = {
+        date: false,
+        format: 'HH:mm'
+    };
+
+    $('#inpBreakfastAt').bootstrapMaterialDatePicker(configs);
+    $('#inpBeInBedAt').bootstrapMaterialDatePicker(configs);
+});
+
 document.getElementById('inpNumberOfMeals').onchange = doit;
 document.getElementById('inpBreakfastAt').onchange = doit;
 document.getElementById('inpBeInBedAt').onchange = doit;
