@@ -153,18 +153,27 @@ $(function () {
 document.getElementById('inpNumberOfMeals').onchange = doit;
 document.getElementById('inpBreakfastAt').onchange = doit;
 document.getElementById('inpBeInBedAt').onchange = doit;
+function getDateStingFromDate(date) {
+    var month = date.getMonth() + 1;
+    var monthString = (month > 9) ? month : '0' + month;
+    var day = date.getDate();
+    var dayString = (day > 9) ? day : '0' + day;
+    return date.getFullYear() + '-' + monthString + '-' + dayString;
+}
 function doit() {
     var numberOfMeals = document.getElementById('inpNumberOfMeals').value;
-    var now = new Date();
-    var month = now.getMonth() + 1;
-    var monthString = (month > 9) ? month : '0' + month;
-    var day = now.getDate();
-    var dayString = (day > 9) ? day : '0' + day;
-    var dateString = now.getFullYear() + '-' + monthString + '-' + dayString;
     var valBreakfastAt = document.getElementById('inpBreakfastAt').value;
     var valBeInBedAt = document.getElementById('inpBeInBedAt').value;
-    var dateBreakfastAt = new Date(dateString + ' ' + valBreakfastAt);
-    var dateBeInBedAt = new Date(dateString + ' ' + valBeInBedAt);
+    var now = new Date();
+    var tomorrow = new Date();
+    tomorrow.setDate(now.getDate() + 1);
+    var breakfastDateString = getDateStingFromDate(now);
+    var beInBedAtDateString = breakfastDateString;
+    if (valBeInBedAt <= valBreakfastAt) {
+        beInBedAtDateString = getDateStingFromDate(tomorrow);
+    }
+    var dateBreakfastAt = new Date(breakfastDateString + ' ' + valBreakfastAt);
+    var dateBeInBedAt = new Date(beInBedAtDateString + ' ' + valBeInBedAt);
     var targets = [];
     try {
         targets = new TargetFactory(dateBreakfastAt, dateBeInBedAt, numberOfMeals).createTargets();

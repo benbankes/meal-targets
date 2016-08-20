@@ -209,21 +209,34 @@ document.getElementById('inpNumberOfMeals').onchange = doit;
 document.getElementById('inpBreakfastAt').onchange = doit;
 document.getElementById('inpBeInBedAt').onchange = doit;
 
+function getDateStingFromDate(date:Date) {
+    let month = date.getMonth() + 1;
+    let monthString = (month > 9) ? month : '0' + month;
+    let day = date.getDate();
+    let dayString = (day > 9) ? day : '0' + day;
+
+    return date.getFullYear() + '-' + monthString + '-' + dayString;
+}
+
 function doit() {
     let numberOfMeals = document.getElementById('inpNumberOfMeals').value;
-
-    let now = new Date();
-    let month = now.getMonth() + 1;
-    let monthString = (month > 9) ? month : '0' + month;
-    let day = now.getDate();
-    let dayString = (day > 9) ? day : '0' + day;
-    let dateString = now.getFullYear() + '-' + monthString + '-' + dayString;
 
     let valBreakfastAt = document.getElementById('inpBreakfastAt').value;
     let valBeInBedAt = document.getElementById('inpBeInBedAt').value;
 
-    let dateBreakfastAt = new Date(dateString + ' ' + valBreakfastAt);
-    let dateBeInBedAt = new Date(dateString + ' ' + valBeInBedAt);
+    let now = new Date();
+    let tomorrow = new Date();
+    tomorrow.setDate(now.getDate() + 1);
+
+    let breakfastDateString = getDateStingFromDate(now);
+    let beInBedAtDateString = breakfastDateString;
+
+    if (valBeInBedAt <= valBreakfastAt) {
+        beInBedAtDateString = getDateStingFromDate(tomorrow);
+    }
+
+    let dateBreakfastAt = new Date(breakfastDateString + ' ' + valBreakfastAt);
+    let dateBeInBedAt = new Date(beInBedAtDateString + ' ' + valBeInBedAt);
 
     let targets = [];
 
