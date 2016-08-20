@@ -72,10 +72,13 @@ var TargetFactory = (function () {
         var intervalHours = this.calculateMealIntervalHours();
         var remainderHours = this.calculateDivisibleHours() - intervalHours * this.countIntervalCutsToMake();
         var countExpandedTargets = remainderHours * 2;
+        var remainingExpandedTargets = countExpandedTargets;
         for (var ithInterval = 1; ithInterval <= this.mealCount; ithInterval++) {
             var target = new TargetEntity();
-            var remainingIntervals = this.mealCount - ithInterval + 1;
-            var thisIntervalHours = (remainingIntervals > countExpandedTargets) ? intervalHours : intervalHours + 0.5;
+            var thisIntervalHours = (remainingExpandedTargets) ? intervalHours + 0.5 : intervalHours;
+            if (remainingExpandedTargets) {
+                remainingExpandedTargets -= 1;
+            }
             target.setIcon('bagel');
             target.setTime(new Date(this.nextTargetStartTime.getTime()));
             this.targets.push(target);

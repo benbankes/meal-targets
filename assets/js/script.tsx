@@ -97,11 +97,15 @@ class TargetFactory {
         let intervalHours = this.calculateMealIntervalHours();
         let remainderHours = this.calculateDivisibleHours() - intervalHours * this.countIntervalCutsToMake();
         let countExpandedTargets = remainderHours * 2;
+        let remainingExpandedTargets = countExpandedTargets;
 
         for (let ithInterval = 1; ithInterval <= this.mealCount; ithInterval++) {
             let target = new TargetEntity();
-            let remainingIntervals = this.mealCount - ithInterval + 1;
-            let thisIntervalHours = (remainingIntervals > countExpandedTargets) ? intervalHours : intervalHours + 0.5;
+            let thisIntervalHours = (remainingExpandedTargets) ? intervalHours + 0.5 : intervalHours;
+
+            if (remainingExpandedTargets) {
+                remainingExpandedTargets -= 1;
+            }
 
             target.setIcon('bagel');
             target.setTime(new Date(this.nextTargetStartTime.getTime()));
